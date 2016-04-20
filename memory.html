@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>JQuery Memory</title>
+    <style type="text/css">
+        body {
+            background-image: url(./img/bg.jpg);
+            /*overflow:hidden;*/
+        }
+        .container {
+            width: 99%;
+            height: 95%;
+            padding-top: 1em;
+        }
+        .container > .reihe {
+            display: block;
+            width: 550px;
+            height: 170px;
+            margin:0 auto;
+            margin-bottom:10px;
+        }
+        .karte {
+            display:inline-block;
+            width: 120px;
+            height: 170px;
+            margin: 5px;
+        }
+        .picture
+        {
+            display:inline-block;
+            width:100%;
+            height:100%;
+            margin: 5px;
+        }
+    </style>
+    <script src="jquery-2.1.1.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var bilder = new Array(16);
+            var bilderNeu = new Array(16);
+            var verdeckt = new Image();
+            verdeckt.src = "img/verdeckt.png";
+            var Karte1 = null;
+            var Karte2 = null;
+            var offeneKarten = 0;
+            var anzahlKlicks = 0;
+            var gefunden = 0;
+
+            for (var i = 0; i < 16; i++) {
+                bilder[i] = new Image();
+                bilder[i].src = (i < 8) ? "img/" + (i + 1) + ".png" : "img/" + (i - 7) + ".png";
+            }
+            mischen();
+
+            $(".karte").each(function (index) {
+                $(this).append("<img class='picture' id='" + index + "' src='" + verdeckt.src + "' />");
+            });
+
+            $(".picture").click(function () {
+                var id = parseInt($(this).attr("id"), 10);
+                if ($(this).attr("src") == verdeckt.src && offeneKarten < 2) {
+                    anzahlKlicks++;
+                    $(this).slideToggle(800, function () {
+                        $(this).attr("src", bilderNeu[id].src);
+                        $(this).slideToggle(800, function () {
+                            if (++offeneKarten == 1)
+                                Karte1 = $(this);
+                            if (offeneKarten == 2) {
+                                Karte2 = $(this);
+                                offeneKarten = 0;
+                                vergleiche(Karte1, Karte2);
+                            }
+                        });
+                    });
+                }
+            });
+
+            function mischen() {
+                for (var i = 16; i > 0; i--) {
+                    var zz = Math.floor(Math.random() * i);
+                    bilderNeu[i - 1] = bilder[zz];
+                    bilder.splice(zz, 1);
+                }
+            }
+
+            function neustart() {
+                $(".picture").each(function () {
+                    $(this).attr("src", verdeckt.src);
+                    $(this).show();
+                });
+                bilder = bilderNeu;
+                bilderNeu = new Array(16);
+                anzahlKlicks = 0;
+                mischen();
+            }
+
+            function vergleiche(Karte1, Karte2) {
+                if ($(Karte1).attr("src") == $(Karte2).attr("src")) {
+                    $(Karte1).fadeToggle(800);
+                    $(Karte2).fadeToggle(800, function () {
+                        if (++gefunden == 8) {
+                            alert("Spiel mit "+ anzahlKlicks + " Klicks geschafft.");
+                            neustart();
+                        }
+                    });
+                }
+                else {
+                    resetCard(Karte1);
+                    resetCard(Karte2);
+                }
+            }
+
+            function resetCard(card) {
+                $(card).delay(1000).slideToggle(800, function () {
+                    $(card).attr("src", verdeckt.src);
+                    $(card).slideToggle(800);
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <script type="text/javascript">
+            for (var i = 0; i < 4; i++) {
+                document.write('<div class="reihe">');
+                for (var j = 0; j < 4; j++) {
+                    document.write('<div class="karte"></div>');
+                }
+                document.write('</div>');
+            }
+        </script>
+    </div>
+</body>
+</html>
